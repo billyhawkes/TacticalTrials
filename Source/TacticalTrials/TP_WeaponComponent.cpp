@@ -3,13 +3,13 @@
 
 #include "TP_WeaponComponent.h"
 #include "TacticalTrialsCharacter.h"
-#include "TacticalTrialsProjectile.h"
 #include "GameFramework/PlayerController.h"
-#include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "HealthComponent.h"
 #include "Animation/AnimInstance.h"
+#include "Camera/CameraComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 
@@ -28,25 +28,33 @@ void UTP_WeaponComponent::Fire()
 		return;
 	}
 
-	// Try and fire a projectile
-	if (ProjectileClass != nullptr)
+	FHitResult Hit;
+
+	FVector Forward = Character->GetFirstPersonCameraComponent()->GetForwardVector();
+
+	const FVector Start = Character->GetFirstPersonCameraComponent()->GetComponentLocation();
+	const FVector End = Start + (Forward * 10000.0f);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Character);
+	
+
+	GetWorld()->LineTraceSingleByChannel(
+		Hit, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
+
+	DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Blue : FColor::Red, true);
+
+	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
 	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
+		UHealthComponent* TargetHealthComponent = Cast<UHealthComponent>(Hit.GetActor()->GetComponentByClass<UHealthComponent>());
+
+		if (TargetHealthComponent)
 		{
-			APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-			const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			const FVector SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
-	
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-	
-			// Spawn the projectile at the muzzle
-			World->SpawnActor<ATacticalTrialsProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			TargetHealthComponent->TakeDamage(Damage);
 		}
 	}
+
+	
 	
 	// Try and play the sound if specified
 	if (FireSound != nullptr)
