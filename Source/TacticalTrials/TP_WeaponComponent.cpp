@@ -42,7 +42,7 @@ void UTP_WeaponComponent::Fire()
 	GetWorld()->LineTraceSingleByChannel(
 		Hit, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
 
-	DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Blue : FColor::Red, true);
+	// DrawDebugLine(GetWorld(), Start, End, Hit.bBlockingHit ? FColor::Blue : FColor::Red, true);
 
 	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
 	{
@@ -74,6 +74,21 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
+void UTP_WeaponComponent::StopFire()
+{
+	GetWorld()->GetTimerManager().ClearTimer(HandleFire_Handle);
+}
+
+
+
+void UTP_WeaponComponent::StartFire()
+{
+	Fire();
+
+	GetWorld()->GetTimerManager().SetTimer(
+		HandleFire_Handle, this, &UTP_WeaponComponent::Fire, 0.1, true);
+}
+
 bool UTP_WeaponComponent::AttachWeapon(ATacticalTrialsCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
@@ -103,7 +118,8 @@ bool UTP_WeaponComponent::AttachWeapon(ATacticalTrialsCharacter* TargetCharacter
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
 			// Fire
-			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &UTP_WeaponComponent::Fire);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &UTP_WeaponComponent::StartFire);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &UTP_WeaponComponent::StopFire);
 		}
 	}
 

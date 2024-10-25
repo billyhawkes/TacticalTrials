@@ -45,6 +45,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
 
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void StopFire();
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void StartFire();
+
+	FTimerHandle HandleFire_Handle;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	int Damage = 30;
 
