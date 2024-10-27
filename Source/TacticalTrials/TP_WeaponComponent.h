@@ -7,6 +7,7 @@
 #include "TP_WeaponComponent.generated.h"
 
 class ATacticalTrialsCharacter;
+class UNiagaraSystem;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TACTICALTRIALS_API UTP_WeaponComponent : public USkeletalMeshComponent
@@ -21,6 +22,9 @@ public:
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effects)
+	UNiagaraSystem* HitEffect;
 
 	/** Gun muzzle's offset from the characters location */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)

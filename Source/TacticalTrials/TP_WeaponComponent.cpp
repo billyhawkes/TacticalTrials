@@ -13,6 +13,9 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 // Sets default values for this component's properties
 UTP_WeaponComponent::UTP_WeaponComponent()
 {
@@ -46,6 +49,10 @@ void UTP_WeaponComponent::Fire()
 
 	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
 	{
+		FRotator Rotation = FRotationMatrix::MakeFromX(Hit.Normal).Rotator();
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, HitEffect, Hit.Location, Rotation);
+		
+		
 		UHealthComponent* TargetHealthComponent = Cast<UHealthComponent>(Hit.GetActor()->GetComponentByClass<UHealthComponent>());
 
 		if (TargetHealthComponent)
